@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-image-signature
+spec:
+  validationFailureAction: Enforce
+  webhookTimeoutSeconds: 30
+  rules:
+    - name: verify-keyless-cosign
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+      verifyImages:
+      - image: "registry.digitalocean.com/idpreg/*"
+        key:
+          oidc:
+            issuer: https://token.actions.githubusercontent.com
+            subject: "https://github.com/susu10-10/online-boutique-app/.github/workflows/ci-main.yml@refs/heads/main"
+        attestors:
+        - entries:
+          - keys:
+              oidc:
+                issuer: https://token.actions.githubusercontent.com
+                subject: "https://github.com/susu10-10/online-boutique-app/.github/workflows/ci-main.yml@refs/heads/main

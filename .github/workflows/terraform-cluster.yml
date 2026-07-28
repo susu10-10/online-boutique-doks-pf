@@ -1,15 +1,15 @@
 name: Terraform DOKS Cluster
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'terraform/cluster/**'
-      - '.github/workflows/terraform-cluster.yml'
-      - 'clusters/boutique/argocd/**'
+  workflow_run:
+    workflows: ["Terraform DOKS Main"]
+    types:
+      - completed
+    branches: [main]
 
 jobs:
   terraform-cluster:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
     defaults:
       run:

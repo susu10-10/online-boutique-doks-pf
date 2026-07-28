@@ -6,10 +6,11 @@ on:
     types:
       - completed
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   terraform-cluster:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -35,8 +36,7 @@ jobs:
           TF_VAR_do_token: ${{ secrets.DO_TOKEN }}
           TF_VAR_do_spaces_access_key: ${{ secrets.SPACES_ACCESS_KEY }}
           TF_VAR_do_spaces_secret_key: ${{ secrets.SPACES_SECRET_KEY }}
-      - if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve
+      - run: terraform apply -auto-approve
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY }}

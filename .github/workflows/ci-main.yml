@@ -2,10 +2,16 @@ name: Build and Push Boutique Containers
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'src/*'
       - '.github/workflows/ci-main.yml'
+      - 'deploy/**'
+  workflow_run:
+    workflows: ["Terraform DOKS Main"]
+    types:
+      - completed
+    branches: [main]
   workflow_dispatch:
 
 env:

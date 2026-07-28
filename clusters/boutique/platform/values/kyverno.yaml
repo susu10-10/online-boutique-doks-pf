@@ -1,0 +1,22 @@
+crds:
+  install: true
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+config:
+  webhookTimeout: 10
+
+# Disable reporting for resource efficiency
+features:
+  reports:
+    enabled: false
+  policyExceptions:
+    enabled: false

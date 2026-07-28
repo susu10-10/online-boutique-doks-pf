@@ -1,0 +1,383 @@
+# Online Boutique Production deployment on digital ocean
+#Security: Containers run on internal network, only Caddy exposed to internet
+
+networks:
+  boutique-net:
+    driver: bridge
+    internal: false
+  backend-net:
+    driver: bridge
+    internal: true
+
+volumes:
+  redis-data:
+  caddy_data:
+  caddy_config:
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_config:/config
+      - caddy_data:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - boutique-net
+    depends_on:
+      - frontend
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/log
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2019/config"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+
+  redis-cart:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend-net
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+
+  frontend:
+    build: ../src/frontend
+    image: registry.digitalocean.com/idpreg/frontend:latest
+    pull_policy: always
+    healthcheck:
+      disable: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+    networks:
+      - boutique-net
+      - backend-net
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+    expose:
+      - 8080
+    environment:
+      PORT: "8080"
+      PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+      CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+      CART_SERVICE_ADDR: "cartservice:7070"
+      RECOMMENDATION_SERVICE_ADDR: "recommendationservice:8080"
+      CHECKOUT_SERVICE_ADDR: "checkoutservice:5050"
+      SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+      AD_SERVICE_ADDR: "adservice:9555"
+      ENV_PLATFORM: "local"
+      ENABLE_TRACING: "0"
+      ENABLE_PROFILER: "0"
+      CYMBAL_BRANDING: "false"
+      ENABLE_ASSISTANT: "false"
+      SHOPPING_ASSISTANT_SERVICE_ADDR: "assistant:8080"
+
+  cartservice:
+    build: ../src/cartservice/src
+    image: registry.digitalocean.com/idpreg/cartservice:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - backend-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      disable: true
+    expose:
+      - 7070
+    environment:
+      REDIS_ADDR: "redis-cart:6379"
+      ASPNETCORE_HTTP_PORTS: "7070"
+      DOTNET_EnableDiagnostics: "0"
+
+  # ──── PRODUCT CATALOG ────
+  productcatalogservice:
+    build: ../src/productcatalogservice
+    image: registry.digitalocean.com/idpreg/productcatalogservice:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+    networks:
+      - backend-net
+    expose:
+      - 3550
+    environment:
+      PORT: "3550"
+      EXTRA_LATENCY: "0s"    # Set to "5.5s" to inject delay (testing only)
+
+  # ──── CURRENCY SERVICE ────
+  currencyservice:
+    build: ../src/currencyservice
+    image: registry.digitalocean.com/idpreg/currencyservice:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+        reservations:
+          memory: 64M
+    networks:
+      - backend-net
+    expose:
+      - 7000
+    environment:
+      PORT: "7000"
+      DISABLE_PROFILER: "true"
+      ENABLE_TRACING: "0"
+
+  # ──── PAYMENT SERVICE ────
+  paymentservice:
+    build: ../src/paymentservice
+    image: registry.digitalocean.com/idpreg/paymentservice:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+        reservations:
+          memory: 64M
+    networks:
+      - backend-net
+    expose:
+      - 50051
+    environment:
+      PORT: "50051"
+      DISABLE_PROFILER: "true"
+
+  # ──── SHIPPING SERVICE ────
+  shippingservice:
+    build: ../src/shippingservice
+    image: registry.digitalocean.com/idpreg/shippingservice:latest
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+    networks:
+      - backend-net
+    expose:
+      - 50051
+    environment:
+      APP_PORT: "50051"
+
+  # ──── EMAIL SERVICE ────
+  emailservice:
+    build: ../src/emailservice
+    image: registry.digitalocean.com/idpreg/emailservice:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - backend-net
+    expose:
+      - 8080
+    environment:
+      PORT: "8080"
+      DISABLE_PROFILER: "true"
+      ENABLE_TRACING: "0"
+
+  # ──── CHECKOUT SERVICE (ORCHESTRATOR) ────
+  checkoutservice:
+    build: ../src/checkoutservice
+    image: registry.digitalocean.com/idpreg/checkoutservice:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - backend-net
+    expose:
+      - 5050
+    environment:
+      PORT: "5050"
+      SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+      PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+      CART_SERVICE_ADDR: "cartservice:7070"
+      CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+      EMAIL_SERVICE_ADDR: "emailservice:8080"
+      PAYMENT_SERVICE_ADDR: "paymentservice:50051"
+      ENABLE_TRACING: "0"
+      ENABLE_PROFILER: "0"
+
+  # ──── RECOMMENDATION SERVICE ────
+  recommendationservice:
+    build: ../src/recommendationservice
+    image: registry.digitalocean.com/idpreg/recommendationservice:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+        reservations:
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - backend-net
+    expose:
+      - 8080
+    environment:
+      PORT: "8080"
+      PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+      ENABLE_TRACING: "0"
+
+  # ──── AD SERVICE ────
+  adservice:
+    build: ../src/adservice
+    image: registry.digitalocean.com/idpreg/adservice:latest
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+    networks:
+      - backend-net
+    expose:
+      - 9555
+    environment:
+      PORT: "9555"
+
+  # ──── LOAD GENERATOR (OPTIONAL — START MANUALLY) ────
+  loadgenerator:
+    build: ../src/loadgenerator
+    image: registry.digitalocean.com/idpreg/loadgenerator:latest
+    restart: "no"    # Only run manually
+    networks:
+      - boutique-net
+    environment:
+      FRONTEND_ADDR: "frontend:8080"
+      USERS: "10"
+      RATE: "1"
+    # Start with: docker compose run loadgenerator
+    profiles:
+      - load-test

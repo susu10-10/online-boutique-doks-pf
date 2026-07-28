@@ -1,0 +1,52 @@
+global:
+  enabled: true
+
+server:
+  ha:
+    enabled: true
+    raft:
+      enabled: true
+      config: |
+        ui = true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_disable = true
+        }
+        storage "raft" {
+          path = "/vault/data"
+          retry_join {
+            leader_api_addr = "http://vault-0.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-1.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-2.vault-internal:8200"
+          }
+        }
+        service_registration "kubernetes" {}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  replicas: 1  # Single replica for 1-node cluster; change to 3 when 2nd node added
+
+ui:
+  enabled: true
+  serviceType: ClusterIP
+
+injector:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

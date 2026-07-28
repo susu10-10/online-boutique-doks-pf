@@ -1,0 +1,13 @@
+proxy:
+  resources:
+    cpu:
+      limit: 100m
+      request: 50m
+    memory:
+      limit: 128Mi
+      request: 64Mi
+
+heartbeatSchedule: "0 0 */1 * *"
+
+identity:
+  externalCA: false

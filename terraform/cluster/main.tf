@@ -95,9 +95,7 @@ resource "helm_release" "argocd_image_updater" {
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argocd-image-updater"
   namespace        = kubernetes_namespace_v1.argocd.metadata[0].name
-  version          = "0.15.0"
-  create_namespace = true
-
+  version          = "1.2.4"
   # give the updater permission to write back to github securely
   set = [{
     name  = "config.secret.github_token"

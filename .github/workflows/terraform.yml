@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: 1.14.6
+          terraform_version: 1.15.6
       - run: terraform init
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY }}

@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: boutique
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: |
+      frontend=registry.digitalocean.com/idpreg/frontend
+      adservice=registry.digitalocean.com/idpreg/adservice
+
+    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
+    argocd-image-updater.argoproj.io/adservice.update-strategy: latest
+    # write back 
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/write-back-target: kustomization
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf' #the git repo to watch
+    targetRevision: HEAD
+    path: apps/boutique # the folder inside the repo where the manifest files are in
+  destination:
+    namespace: boutique
+    server: 'https://kubernetes.default.svc' # point to the local k8s cluster where argocd is installed.
+  syncPolicy: # this is the heart of gitops
+    automated:
+      prune: true # if a file is deleted in git, it is also removed from the cluster.
+      selfHeal: true # argocd will automatically fix the cluster if a drift is detected.
+    syncOptions:
+      - CreateNamespace=true

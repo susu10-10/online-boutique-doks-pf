@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: linkerd-cp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: linkerd-control-plane
+    repoURL: 'https://helm.linkerd.io/stable'
+    targetRevision: 1.16.11
+    helm:
+      values: |
+        identityTrustDomain: cluster.local
+        identity:
+          issuer:
+            scheme: kubernetes.io/tls
+            tls:
+              secretName: linkerd-identity-issuer
+        proxy:
+          resources:
+            cpu:
+              limit: 100m
+              request: 50m
+            memory:
+              limit: 128Mi
+              request: 64Mi
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: linkerd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace: true

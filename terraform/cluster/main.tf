@@ -82,11 +82,12 @@ resource "kubernetes_secret_v1" "digital_ocean_token" {
   }
   type = "Opaque"
 
-  stringData = {
-    username = "token"
-    password = var.do_token
+  data = {
+    username = base64encode("token")
+    password = base64encode(var.do_token)
   }
-}
+  }
+  
 
 # install ArgoCD Image Updater (Add-on)
 resource "helm_release" "argocd_image_updater" {

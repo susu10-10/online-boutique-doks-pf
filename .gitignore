@@ -17,7 +17,7 @@ deploy/.env
 # OS
 .DS_Store
 Thumbs.db
-
+cosign.pub
 
 .github/workflows/security-opt.yml
 

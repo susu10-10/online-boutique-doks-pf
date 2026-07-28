@@ -14,13 +14,8 @@ spec:
             - Pod
       verifyImages:
       - image: "registry.digitalocean.com/idpreg/*"
-        key:
-          oidc:
-            issuer: https://token.actions.githubusercontent.com
-            subject: "https://github.com/susu10-10/online-boutique-app/.github/workflows/ci-main.yml@refs/heads/main"
-        attestors:
-        - entries:
-          - keys:
-              oidc:
-                issuer: https://token.actions.githubusercontent.com
-                subject: "https://github.com/susu10-10/online-boutique-app/.github/workflows/ci-main.yml@refs/heads/main
+        key: |-
+          -----BEGIN PUBLIC KEY-----
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFser5E5Yw6U9xkMvxr7OG4wPhyaY
+          qsk5srtZNDcf5REO2Zor/lmsynfPN6gZ72al9Z9DAssJzY5SSbUvburT5A==
+          -----END PUBLIC KEY-----

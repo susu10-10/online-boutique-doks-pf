@@ -16,7 +16,6 @@ resource "digitalocean_kubernetes_cluster" "boutique-cluster" {
     name       = "worker-pool"
     size       = var.node_size
     node_count = 1
-    auto_scale = true
   }
 
   maintenance_policy {

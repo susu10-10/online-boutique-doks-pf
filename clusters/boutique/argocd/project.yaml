@@ -1,0 +1,19 @@
+# RBAC who can deploy what
+
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: boutique
+  namespace: argocd
+spec:
+  description: "Online Boutique project"
+  sourceRepos:
+    - 'https://github.com/susu10-10/online-boutique-doks-pf'
+  destinations:
+    - namespace: boutique
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

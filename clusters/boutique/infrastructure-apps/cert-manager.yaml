@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd # Must match the namespace where Argo CD is installed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io # Enables cascading delete
+spec:
+  project: default
+  source:
+    repoURL: 'https://charts.jetstack.io' # Helm registry URL
+    chart: cert-manager   # Chart name
+    targetRevision: 1.21.0      # Version of the chart
+    helm:
+      valueFiles:
+        - https://raw.githubusercontent.com/susu10-10/online-boutique-doks-pf/main/clusters/boutique/platform-configs/helm-values/cert-manager.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'    # Target cluster
+    namespace: cert-manager                    # Target namespace
+  syncPolicy:
+    automated:
+      prune: true                               # Automatically delete removed resources
+      selfHeal: true                            # Fix configuration drift automatically
+    syncOptions:
+      - CreateNamespace: true                     # Automatically create target namespace

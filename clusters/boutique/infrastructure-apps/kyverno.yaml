@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno
+  namespace: argocd # Must match the namespace where Argo CD is installed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io # Enables cascading delete
+spec:
+  project: default
+  source:
+    repoURL: 'https://kyverno.github.io/kyverno/' # Helm registry URL
+    chart: kyverno   # Chart name
+    targetRevision: 3.8.2     # Version of the chart
+    helm:
+      valueFiles:
+        - https://raw.githubusercontent.com/susu10-10/online-boutique-doks-pf/main/clusters/boutique/platform-configs/helm-values/kyverno.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'    # Target cluster
+    namespace: kyverno                    # Target namespace
+  syncPolicy:
+    automated:
+      prune: true                               # Automatically delete removed resources
+      selfHeal: true                            # Fix configuration drift automatically
+    syncOptions:
+      - CreateNamespace: true                     # Automatically create target namespace

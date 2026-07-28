@@ -77,7 +77,7 @@ resource "kubernetes_manifest" "root_app" {
 #k8s secret to store digital ocean token
 resource "kubernetes_secret_v1" "digital_ocean_token" {
   metadata {
-    name = "digital-ocean-token"
+    name      = "digital-ocean-token"
     namespace = kubernetes_namespace_v1.argocd.metadata[0].name
   }
   type = "Opaque"
@@ -86,8 +86,8 @@ resource "kubernetes_secret_v1" "digital_ocean_token" {
     username = base64encode("token")
     password = base64encode(var.do_token)
   }
-  }
-  
+}
+
 
 # install ArgoCD Image Updater (Add-on)
 resource "helm_release" "argocd_image_updater" {
@@ -99,22 +99,22 @@ resource "helm_release" "argocd_image_updater" {
   create_namespace = true
 
   # give the updater permission to write back to github securely
-  set {
-    name = "config.secret.github_token"
+  set = [{
+    name  = "config.secret.github_token"
     value = var.gitops_token
-  }
-  set {
-    name = "config.registries[0].api_url"
-    value = "https://registry.digitalocean.com"
-  }
-  set {
-    name = "config.registries[0].username"
-    value = "token"
-  }
-  set {
-    name = "config.registries[0].password"
-    value = "secret:${kubernetes_secret_v1.digital_ocean_token.metadata[0].name}#password"
-  }
-  
+    },
+    {
+      name  = "config.registries[0].api_url"
+      value = "https://registry.digitalocean.com"
+    },
+    {
+      name  = "config.registries[0].username"
+      value = "token"
+    },
+    {
+      name  = "config.registries[0].password"
+      value = "secret:${kubernetes_secret_v1.digital_ocean_token.metadata[0].name}#password"
+    }
+  ]
   depends_on = [helm_release.argocd, kubernetes_secret_v1.digital_ocean_token]
 }

@@ -1,0 +1,25 @@
+name: Deploy via ArgoCD
+
+on:
+  workflow_run:
+    workflows: [ "Build and Push Boutique Containers" ]
+    types: [ completed ]
+    branches: [ main ]
+
+jobs:
+  sync:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin
+      - name: Sync boutique app
+        run: |
+          argocd login argocd.suworks.me:443 \
+            --username admin \
+            --password ${{ secrets.ARGOCD_ADMIN_PASSWORD }} \
+            --grpc-web
+          argocd app sync boutique --grpc-web --prune
+          argocd app wait boutique --grpc-web --health

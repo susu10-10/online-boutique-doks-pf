@@ -1,0 +1,23 @@
+crds:
+  # This option decides if the CRDs should be installed
+  # as part of the Helm installation.
+  enabled: true
+# Resources to provide to the cert-manager controller pod.
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+#The number of replicas of the cert-manager controller to run.
+#
+# The default is 1, but in production set this to 2 or 3 to provide high
+# availability.
+#
+# If `replicas > 1`, consider setting `podDisruptionBudget.enabled=true`.
+#
+# Note that cert-manager uses leader election to ensure that there can
+# only be a single instance active at a time.
+replicaCount: 1
+

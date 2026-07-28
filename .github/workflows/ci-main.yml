@@ -1,0 +1,123 @@
+name: Build and Push Boutique Containers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/*'
+      - '.github/workflows/ci-main.yml'
+      - 'src/*'
+  workflow_dispatch:
+
+env:
+  DOCR: registry.digitalocean.com/idpreg
+  SHA_TAG: sha-${{ github.sha }}
+
+
+jobs:
+  code-tests:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-dotnet@v5
+      env:
+        DOTNET_INSTALL_DIR: "./.dotnet"
+      with:
+        dotnet-version: '10.0'
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.26'
+    - name: Go Unit Tests
+      timeout-minutes: 10
+      run: |
+        for SERVICE in "shippingservice" "productcatalogservice"; do
+          echo "testing $SERVICE..."
+          pushd src/$SERVICE
+          go test
+          popd
+        done
+    - name: C# Unit Tests
+      timeout-minutes: 10
+      run: |
+        dotnet test src/cartservice/
+
+  build-and-push:
+    needs: code-tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+
+      - name: Login to Digital Ocean Container Registry
+        run: doctl registry login
+
+      - name: Build all images
+        run: docker compose -f deploy/docker-compose.yml build
+
+      - name: Tag with Git Commit SHA
+        run: |
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep "$DOCR" | while read -r img; do
+          # Safely remove the existing tag and apply the unique SHA tag
+            BASE_IMG=$(echo "$img" | cut -d: -f1)
+            docker tag "$img" "$(echo "$img" | cut -d: -f1):$SHA_TAG"
+          done
+
+      - name: Scan built images with Trivy
+        run: |
+          docker pull aquasec/trivy:0.57.0 > /dev/null 2>&1
+          mkdir -p /tmp/trivy-cache
+          # Dynamically capture all SHA-tagged images for scanning
+           IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$DOCR" | grep "$SHA_TAG")
+          
+          IS_FIRST_RUN=true
+          for img in $IMAGES; do
+            echo "🔎 Scanning: $img"
+            
+          # Build database flags dynamically so it doesn't redownload for each image
+            DB_FLAGS=""
+            if [ "$IS_FIRST_RUN" = false ]; then
+              DB_FLAGS="--skip-db-update"
+            fi
+            
+            # Put global flag '--skip-version-check' BEFORE the subcommand 'image'
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v trivy-cache:/root/.cache \
+              aquasec/trivy:0.57.0 image \
+              --severity HIGH,CRITICAL \
+              --exit-code 0 \
+              $DB_FLAGS \
+              "$img"
+              
+            IS_FIRST_RUN=false
+          done
+
+      - name: Push all images to registry
+        run: |
+          # push both 'latest' (if built) and the unique SHA tags
+          docker compose -f deploy/docker-compose.yml push
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep "$DOCR" | grep "$SHA_TAG" | while read -r img; do
+            docker push "$img"
+          done
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.0
+
+      - name: Sign remote images
+        run: |
+          # Re-gather images to ensure they match exactly what is in remote registry
+          IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$DOCR" | grep "$SHA_TAG")
+          for img in $IMAGES; do
+            echo "🔏 Signing Remote Image: $img"
+            cosign sign --yes --key env://COSIGN_PRIVATE_KEY "$img"
+          done
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}

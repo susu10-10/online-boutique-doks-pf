@@ -1,0 +1,29 @@
+ebpf:
+  enabled: true
+
+falco:
+  rules_file:
+    - /etc/falco/rules.d/
+    - /etc/falco/falco_rules.yaml
+    - /etc/falco/falco_rules.local.yaml
+
+  json_output: true
+  json_include_output_property: true
+
+  stdout_output:
+    enabled: true
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  syscall_event_drops:
+    actions:
+      - log
+    threshold: 0.1
+
+  priority: warning

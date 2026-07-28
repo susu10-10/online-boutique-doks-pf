@@ -1,0 +1,52 @@
+
+global:
+  domain: argocd.suworks.me
+
+configs:
+  params:
+    server.insecure: true
+
+server:
+  replicas: 1
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    tls: true
+    hosts:
+      - argocd.suworks.me
+
+## Application controller
+controller:
+  # -- Application controller name string
+  name: application-controller
+  # -- The number of application controller pods to run.
+  # Additional replicas will cause sharding of managed clusters across number of replicas.
+  ## With dynamic cluster distribution turned on, sharding of the clusters will gracefully
+  ## rebalance if the number of replica's changes or one becomes unhealthy. (alpha)
+  replicas: 1
+
+## Repo Server
+repoServer:
+  # -- Repo server name
+  name: repo-server
+  # -- The number of repo server pods to run
+  replicas: 1
+
+## ApplicationSet controller
+applicationSet:
+  # -- ApplicationSet controller name string
+  name: applicationset-controller
+
+  # -- The number of ApplicationSet controller pods to run
+  replicas: 1
+
+## Redis
+redis:
+  # -- Enable redis
+  enabled: false
+  # -- Redis name
+  name: redis

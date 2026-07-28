@@ -1,0 +1,23 @@
+controller:
+  service:
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  config:
+    ssl-redirect: "true"
+    use-forwarded-headers: "true"
+    add-headers: |
+      X-Content-Type-Options: nosniff
+      X-Frame-Options: DENY
+      X-XSS-Protection: 1; mode=block
+      Referrer-Policy: strict-origin-when-cross-origin
+      Strict-Transport-Security: max-age=31536000; includeSubDomains; preload

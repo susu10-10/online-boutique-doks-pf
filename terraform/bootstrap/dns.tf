@@ -1,5 +1,5 @@
 # Use existing domain (already registered in DO)
-data "digitalocean_domain" "boutique" {
+resource "digitalocean_domain" "boutique" {
   name = var.domain_name
 }
 

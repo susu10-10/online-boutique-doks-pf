@@ -126,13 +126,11 @@ metadata:
   name: frontend
 
 ---
-apiVersion: networking.k8s.io/v1
+aapiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/configuration-snippet: |
       add_header X-Content-Type-Options "nosniff" always;
       add_header X-Frame-Options "DENY" always;
@@ -141,11 +139,6 @@ metadata:
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - suworks.me
-        - www.suworks.me
-      secretName: boutique-tls
   rules:
     - host: suworks.me
       http:

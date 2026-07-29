@@ -10,6 +10,7 @@ resource "digitalocean_kubernetes_cluster" "boutique-cluster" {
   name         = "boutique-doks"
   region       = var.region
   auto_upgrade = false
+  registry_integration = true
   version      = data.digitalocean_kubernetes_versions.vk8s.latest_version
 
   node_pool {

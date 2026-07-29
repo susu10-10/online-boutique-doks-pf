@@ -26,7 +26,7 @@ spec:
     server: 'https://kubernetes.default.svc' # point to the local k8s cluster where argocd is installed.
   syncPolicy: # this is the heart of gitops
     automated:
-      prune: true # if a file is deleted in git, it is also removed from the cluster.
+      prune: false # if a file is deleted in git, it is also removed from the cluster.
       selfHeal: true # argocd will automatically fix the cluster if a drift is detected.
     syncOptions:
       - CreateNamespace=true

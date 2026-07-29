@@ -1,5 +1,5 @@
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   name: linkerd-selfsigned
 spec:
@@ -19,7 +19,7 @@ spec:
   renewBefore: 360h
   issuerRef:
     name: linkerd-selfsigned
-    kind: ClusterIssuer
+    kind: Issuer
   privateKey:
     algorithm: ECDSA
     size: 256

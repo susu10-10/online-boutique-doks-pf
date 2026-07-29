@@ -5,6 +5,12 @@ global:
 configs:
   params:
     server.insecure: true
+  cm:
+    repositories: |
+      - url: https://github.com/susu10-10/online-boutique-doks-pf
+        type: git
+        name: boutique-infra
+
 
 server:
   replicas: 1

@@ -44,7 +44,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: registry.digitalocean.com/idpreg/frontend:latest
+          image: registry.digitalocean.com/idpreg/frontend
           ports:
           - containerPort: 8080
           readinessProbe:

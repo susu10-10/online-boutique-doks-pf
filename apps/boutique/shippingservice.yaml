@@ -44,7 +44,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: registry.digitalocean.com/idpreg/shippingservice:latest
+        image: registry.digitalocean.com/idpreg/shippingservice
         ports:
         - containerPort: 50051
         env:

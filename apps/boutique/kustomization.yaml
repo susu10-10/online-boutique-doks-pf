@@ -18,6 +18,28 @@ resources:
 - redis.yaml
 - network-policies
 
+images:
+  - name: registry.digitalocean.com/idpreg/frontend
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/adservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/cartservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/checkoutservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/emailservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/paymentservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/productcatalogservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/recommendationservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/shippingservice
+    newTag: sha-initial
+  - name: registry.digitalocean.com/idpreg/currencyservice
+    newTag: sha-initial
+
 patches:
 - patch: |-
     apiVersion: apps/v1

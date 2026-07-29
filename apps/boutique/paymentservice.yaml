@@ -45,7 +45,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: registry.digitalocean.com/idpreg/paymentservice:latest
+        image: registry.digitalocean.com/idpreg/paymentservice
         ports:
         - containerPort: 50051
         env:

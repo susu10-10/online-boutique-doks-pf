@@ -31,7 +31,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: registry.digitalocean.com/idpreg/currencyservice:latest
+        image: registry.digitalocean.com/idpreg/currencyservice
         ports:
         - name: grpc
           containerPort: 7000

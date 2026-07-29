@@ -44,7 +44,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: registry.digitalocean.com/idpreg/checkoutservice:latest
+          image: registry.digitalocean.com/idpreg/checkoutservice
           ports:
           - containerPort: 5050
           readinessProbe:

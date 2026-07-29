@@ -45,7 +45,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: registry.digitalocean.com/idpreg/emailservice:latest
+        image: registry.digitalocean.com/idpreg/emailservice
         ports:
         - containerPort: 8080
         env:

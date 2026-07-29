@@ -45,7 +45,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: registry.digitalocean.com/idpreg/adservice:latest
+        image: registry.digitalocean.com/idpreg/adservice
         ports:
         - containerPort: 9555
         env:

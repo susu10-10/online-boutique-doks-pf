@@ -5,7 +5,7 @@ resource "digitalocean_domain" "boutique" {
 
 # A record pointing to the LoadBalancer
 resource "digitalocean_record" "root" {
-  domain = data.digitalocean_domain.boutique.name
+  domain = digitalocean_domain.boutique.name
   type   = "A"
   name   = "@"
   ttl    = 60
@@ -14,7 +14,7 @@ resource "digitalocean_record" "root" {
 
 # Wildcard CNAME...
 resource "digitalocean_record" "wildcard" {
-  domain = data.digitalocean_domain.boutique.name
+  domain = digitalocean_domain.boutique.name
   type   = "CNAME"
   name   = "*"
   ttl    = 60

@@ -19,7 +19,7 @@ spec:
     namespace: cert-manager                    # Target namespace
   syncPolicy:
     automated:
-      prune: true                               # Automatically delete removed resources
+      prune: false                           # Automatically delete removed resources
       selfHeal: true                            # Fix configuration drift automatically
     syncOptions:
       - CreateNamespace=true                     # Automatically create target namespace

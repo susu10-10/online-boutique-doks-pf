@@ -5,20 +5,55 @@ metadata:
 spec:
   selfSigned: {}
 ---
+# create the Root Trust Anchor (CA)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: linkerd-trust-anchor
+  namespace: linkerd
+spec:
+  isCA: true
+  commonName: root.linkerd.cluster.local
+  secretName: linkerd-identity-issuer-secret
+  duration: 87600h
+  renewBefore: 360h
+  issuerRef:
+    name: linkerd-selfsigned
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+---
+# internal issuer to bridge the root to the identity cert
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: linkerd-trust-anchor-issuer
+  namespace: linkerd
+spec:
+  ca:
+    secretName: linkerd-identity-issuer-secret
+---
+# The actual Identity Issuer Linkerd mounts for container authentication
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: linkerd-identity-issuer
   namespace: linkerd
 spec:
-  secretName: linkerd-identity-issuer
-  duration: 87600h
-  renewBefore: 360h
-  issuerRef:
-    name: linkerd-selfsigned
-    kind: ClusterIssuer
-  commonName: root.linkerd.cluster.local
   isCA: true
+  commonName: identity.linkerd.cluster.local
+  secretName: linkerd-identity-issuer
+  duration: 43800h
+  renewBefore: 720h
+  issuerRef:
+    name: linkerd-trust-anchor-issuer
+    kind: Issuer
   privateKey:
     algorithm: ECDSA
     size: 256
+  usages:
+    - cert sign
+    - crl sign
+    - server auth
+    - client auth

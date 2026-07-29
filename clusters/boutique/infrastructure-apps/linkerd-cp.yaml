@@ -14,11 +14,6 @@ spec:
     helm:
       values: |
         identityTrustDomain: cluster.local
-        identity:
-          issuer:
-            scheme: kubernetes.io/tls
-            tls:
-              secretName: linkerd-identity-issuer
         proxy:
           resources:
             cpu:

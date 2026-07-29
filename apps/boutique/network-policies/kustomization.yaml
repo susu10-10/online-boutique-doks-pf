@@ -28,3 +28,4 @@ resources:
 - network-policy-recommendationservice.yaml
 - network-policy-redis.yaml
 - network-policy-shippingservice.yaml
+- network-policy-acme-solver.yaml

@@ -20,9 +20,14 @@ resources:
 
 patches:
   - target:
-      kind: ServiceAccount
-    patch: |-
-      - op: add
-        path: /imagePullSecrets
-        value:
-          - name: idpreg
+      kind: Deployment
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: all-deployments # Kustomize ignores this name and matches the target kind
+      spec:
+        template:
+          spec:
+            imagePullSecrets:
+              - name: idpreg

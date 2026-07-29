@@ -30,3 +30,27 @@ spec:
       - CreateNamespace=true                     # Automatically create target namespace
       - ServerSideApply=true                     # Use server-side apply for syncing
       - Replace=true
+
+
+---
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno-custom-policies
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf'
+    targetRevision: main
+    path: 'clusters/boutique/platform-configs/kyverno/policies'
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: kyverno
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

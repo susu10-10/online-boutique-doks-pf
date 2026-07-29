@@ -39,3 +39,14 @@ variable "node_size" {
   type        = string
   default     = "s-4vcpu-8gb"
 }
+
+variable "domain_name" {
+  description = "Domain name"
+  type        = string
+  default     = "suworks.me"
+}
+
+variable "lb_ip" {
+  description = "Load Balancer IP from nginx-ingress"
+  type        = string
+}

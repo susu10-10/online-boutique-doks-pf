@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/susu10-10/online-boutique-doks-pf
-    targetRevision: HEAD
+    targetRevision: main
     path: clusters/boutique/infrastructure-apps # tells argo to scan this dir for child applications 
   destination:
     server: https://kubernetes.default.svc # deploys directly to the current DOKS cluster

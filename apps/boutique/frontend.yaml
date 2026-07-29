@@ -132,13 +132,14 @@ metadata:
   name: frontend
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
-  # tls:
-  #   - hosts:
-  #       - suworks.me
-  #       - www.suworks.me
-  #     secretName: boutique-tls
+  tls:
+    - hosts:
+        - suworks.me
+        - www.suworks.me
+      secretName: boutique-tls
   rules:
     - host: suworks.me
       http:

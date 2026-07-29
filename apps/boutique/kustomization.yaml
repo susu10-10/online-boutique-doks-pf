@@ -17,3 +17,12 @@ resources:
   - currencyservice.yaml
   - redis.yaml
   - network-policies
+
+patches:
+  - target:
+      kind: ServiceAccount
+    patch: |-
+      - op: add
+        path: /imagePullSecrets
+        value:
+          - name: idpreg

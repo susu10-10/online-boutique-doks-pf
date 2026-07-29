@@ -23,8 +23,3 @@ features:
 
 existingImagePullSecrets:
   - idpreg
-
- # -- Image pull secrets
-imagePullSecrets:
-  - name: idpreg
-  # - name: secretName

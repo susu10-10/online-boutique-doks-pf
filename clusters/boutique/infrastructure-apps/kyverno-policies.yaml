@@ -1,14 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kyverno-policies
+  name: kyverno-custom-policies
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: default
   source:
     repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf'
     targetRevision: main
-    path: 'https://raw.githubusercontent.com/susu10-10/online-boutique-doks-pf/main/clusters/boutique/platform-configs/kyverno/policies'
+    path: 'clusters/boutique/platform-configs/kyverno/policies'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: kyverno

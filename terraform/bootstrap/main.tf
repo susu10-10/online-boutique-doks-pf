@@ -25,6 +25,7 @@ resource "digitalocean_kubernetes_cluster" "boutique-cluster" {
   }
 }
 
+
 resource "digitalocean_project_resources" "boutique" {
   project = data.digitalocean_project.idpprj.id
   resources = [

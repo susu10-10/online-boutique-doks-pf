@@ -22,4 +22,4 @@ spec:
       prune: true                               # Automatically delete removed resources
       selfHeal: true                            # Fix configuration drift automatically
     syncOptions:
-      - CreateNamespace: true                     # Automatically create target namespace
+      - CreateNamespace=true                     # Automatically create target namespace

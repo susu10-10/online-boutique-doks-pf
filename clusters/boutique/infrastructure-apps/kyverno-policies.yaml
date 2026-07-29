@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf'
-    targetRevision: HEAD
+    targetRevision: main
     path: clusters/boutique/platform-configs/kyverno/policies
   destination:
     server: 'https://kubernetes.default.svc'

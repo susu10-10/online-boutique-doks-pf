@@ -19,7 +19,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf' #the git repo to watch
-    targetRevision: HEAD
+    targetRevision: main
     path: apps/boutique # the folder inside the repo where the manifest files are in
   destination:
     namespace: boutique

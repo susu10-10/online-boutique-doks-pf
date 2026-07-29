@@ -53,7 +53,7 @@ resource "kubernetes_manifest" "root_app" {
       project = "default"
       source = {
         repoURL        = "https://github.com/susu10-10/online-boutique-doks-pf"
-        targetRevision = "HEAD"
+        targetRevision = "main"
         path           = "clusters/boutique/infrastructure-apps"
       }
       destination = {

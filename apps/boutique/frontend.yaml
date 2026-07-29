@@ -134,11 +134,11 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - suworks.me
-        - www.suworks.me
-      secretName: boutique-tls
+  # tls:
+  #   - hosts:
+  #       - suworks.me
+  #       - www.suworks.me
+  #     secretName: boutique-tls
   rules:
     - host: suworks.me
       http:

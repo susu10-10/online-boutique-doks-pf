@@ -132,25 +132,26 @@ metadata:
   name: frontend
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-  ingressClassName: nginx
-  rules:
-    - host: suworks.me
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend
-                port:
-                  number: 80
-    - host: www.suworks.me
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend
-                port:
-                  number: 80
+  spec:
+    ingressClassName: nginx
+    rules:
+      - host: suworks.me
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: frontend
+                  port:
+                    number: 80
+      - host: www.suworks.me
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: frontend
+                  port:
+                    number: 80

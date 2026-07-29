@@ -12,7 +12,7 @@ resource "digitalocean_record" "root" {
   value  = var.lb_ip
 }
 
-# Wildcard CNAME
+# Wildcard CNAME...
 resource "digitalocean_record" "wildcard" {
   domain = data.digitalocean_domain.boutique.name
   type   = "CNAME"

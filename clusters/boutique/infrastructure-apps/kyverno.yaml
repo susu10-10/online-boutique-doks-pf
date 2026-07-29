@@ -29,3 +29,4 @@ spec:
     syncOptions:
       - CreateNamespace=true                     # Automatically create target namespace
       - ServerSideApply=true                     # Use server-side apply for syncing
+      - Replace=true

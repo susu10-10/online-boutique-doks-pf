@@ -8,9 +8,6 @@ metadata:
     policies.kyverno.io/title: Require Requests and Limits
   name: require-requests-limits
 spec:
-  matchConditions:
-    - name: restrict-to-boutique
-      expression: object.metadata.namespace == 'boutique'
   evaluation:
     background:
       enabled: true

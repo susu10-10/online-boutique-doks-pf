@@ -14,7 +14,7 @@ spec:
     - name: restrict-to-boutique
       expression: object.metadata.namespace == 'boutique'
   validationActions:
-    - Deny
+    - Audit
   autogen:
     podControllers:
       controllers:

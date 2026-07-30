@@ -14,6 +14,7 @@ spec:
             - Pod
       verifyImages:
       - image: "registry.digitalocean.com/idpreg/*"
+        mutateDigest: false
         key: |-
           -----BEGIN PUBLIC KEY-----
           MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFser5E5Yw6U9xkMvxr7OG4wPhyaY

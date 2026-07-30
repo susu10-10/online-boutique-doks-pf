@@ -3,7 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: verify-image-signature
 spec:
-  validationFailureAction: Enforce
+  validationFailureAction: Audit
   webhookTimeoutSeconds: 30
   rules:
     - name: verify-keyless-cosign

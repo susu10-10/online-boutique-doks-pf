@@ -21,5 +21,3 @@ features:
   policyExceptions:
     enabled: false
 
-existingImagePullSecrets:
-  - docr-secret

@@ -22,4 +22,4 @@ features:
     enabled: false
 
 existingImagePullSecrets:
-  - idpreg
+  - docr-secret

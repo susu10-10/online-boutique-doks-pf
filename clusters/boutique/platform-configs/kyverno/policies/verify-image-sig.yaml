@@ -19,3 +19,6 @@ spec:
           MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEFser5E5Yw6U9xkMvxr7OG4wPhyaY
           qsk5srtZNDcf5REO2Zor/lmsynfPN6gZ72al9Z9DAssJzY5SSbUvburT5A==
           -----END PUBLIC KEY-----
+      imageRegistryCredentials:
+        pullSecret: docr-secret  # Name of the secret in the Kyverno namespace
+        allowInsecureRegistry: false

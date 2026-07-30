@@ -9,9 +9,6 @@ metadata:
     policies.kyverno.io/title: Require Read-Only Root Filesystem
   name: require-ro-rootfs
 spec:
-  matchConditions:
-    - name: restrict-to-boutique
-      expression: object.metadata.namespace == 'boutique'
   evaluation:
     background:
       enabled: true

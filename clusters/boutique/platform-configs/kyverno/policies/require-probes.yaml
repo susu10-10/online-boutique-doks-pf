@@ -10,9 +10,6 @@ metadata:
     policies.kyverno.io/description: "Liveness and readiness probes are essential for managing Pod lifecycle during deployments, restarts, and upgrades. Liveness probes help the kubelet determine when to restart containers, while readiness probes help Services and Deployments determine when Pods are ready to receive traffic. Startup probes provide additional control during container startup. This policy validates that all containers have at least one of livenessProbe, readinessProbe, or startupProbe defined.      "
     policies.kyverno.io/minversion: 1.14.0
 spec:
-  matchConditions:
-    - name: restrict-to-boutique
-      expression: object.metadata.namespace == 'boutique'
   validationActions:
     - Audit
   autogen:

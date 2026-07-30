@@ -1,14 +1,14 @@
 prometheus:
   prometheusSpec:
-    retention: 15d
+    retention: 7d
     retentionSize: 10GB
     resources:
       requests:
         cpu: 200m
         memory: 512Mi
       limits:
-        cpu: 1000m
-        memory: 2Gi
+        cpu: 600m
+        memory: 1Gi
     scrapeInterval: 30s
     evaluationInterval: 30s
     storageSpec:
@@ -17,12 +17,12 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 20Gi
+              storage: 10Gi
 
   replicas: 1
 
 grafana:
-  adminPassword: admin
+  adminPassword: 
   resources:
     requests:
       cpu: 100m
@@ -61,3 +61,12 @@ alertmanager:
     limits:
       cpu: 200m
       memory: 128Mi
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+prometheusOperator:
+  enabled: true

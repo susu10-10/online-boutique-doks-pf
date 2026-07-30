@@ -9,13 +9,16 @@ metadata:
     - resources-finalizer.argocd.argoproj.io # Enables cascading delete
 spec:
   project: default
-  source:
-    repoURL: 'https://charts.jetstack.io' # Helm registry URL
-    chart: cert-manager   # Chart name
-    targetRevision: 1.21.0      # Version of the chart
-    helm:
-      valueFiles:
-        - https://raw.githubusercontent.com/susu10-10/online-boutique-doks-pf/main/clusters/boutique/platform-configs/helm-values/cert-manager.yaml
+  sources:
+    - repoURL: 'https://charts.jetstack.io' # Helm registry URL
+      chart: cert-manager   # Chart name
+      targetRevision: 1.21.0      # Version of the chart
+      helm:
+        valueFiles:
+        - $values/clusters/boutique/platform-configs/helm-values/cert-manager.yaml
+    - repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf'
+      targetRevision: main
+      ref: values
   destination:
     server: 'https://kubernetes.default.svc'    # Target cluster
     namespace: cert-manager                    # Target namespace

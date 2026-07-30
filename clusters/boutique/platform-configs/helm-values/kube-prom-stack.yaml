@@ -22,6 +22,11 @@ prometheus:
   replicas: 1
 
 grafana:
+  persistence:
+    enabled: true
+    size: 5Gi
+  testFramework:
+    enabled: true
   adminPassword: 
   resources:
     requests:

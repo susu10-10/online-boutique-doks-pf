@@ -40,3 +40,12 @@ resources:
   limits:
     cpu: 1
     memory: 1Gi
+
+backend:
+  replicas: 0
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0

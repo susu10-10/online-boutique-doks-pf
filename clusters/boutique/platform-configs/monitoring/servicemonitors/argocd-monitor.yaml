@@ -4,17 +4,19 @@ kind: ServiceMonitor
 metadata:
   name: argocd
   namespace: prometheus
+
   labels:
     release: prometheus
 
 spec:
+
   namespaceSelector:
     matchNames:
       - argocd
 
   selector:
     matchLabels:
-      app.kubernetes.io/name: argocd-server-metrics
+      app.kubernetes.io/part-of: argocd
 
   endpoints:
     - port: metrics

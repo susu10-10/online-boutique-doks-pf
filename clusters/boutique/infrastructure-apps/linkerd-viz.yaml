@@ -15,17 +15,17 @@ spec:
     targetRevision: 30.12.11
     helm:
       values: |
-        
         prometheus:
           enabled: true
-
         grafana:
           enabled: true
-
         tap:
           enabled: true
-
-        dashboard:
+        tapInjector:
+          enabled: true
+        metricAPI:
+          enabled: true
+        web:
           enabled: true
   destination:
     server: https://kubernetes.default.svc

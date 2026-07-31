@@ -1,0 +1,114 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: linkerd-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: linkerd.recording.rules
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Linkerd Request Rate
+    #
+    - record: linkerd:request_rate
+      expr: |
+        sum(
+          rate(
+            response_total[5m]
+          )
+        )
+
+
+    #
+    # Linkerd Success Rate %
+    #
+    - record: linkerd:success_rate:percent
+      expr: |
+        100 *
+        (
+          sum(
+            rate(
+              response_total{
+                classification="success"
+              }[5m]
+            )
+          )
+          /
+          sum(
+            rate(
+              response_total[5m]
+            )
+          )
+        )
+
+
+    #
+    # Linkerd Error Rate %
+    #
+    - record: linkerd:error_rate:percent
+      expr: |
+        100 *
+        (
+          sum(
+            rate(
+              response_total{
+                classification="failure"
+              }[5m]
+            )
+          )
+          /
+          sum(
+            rate(
+              response_total[5m]
+            )
+          )
+        )
+
+
+    #
+    # Linkerd Request Latency P50
+    #
+    - record: linkerd:request_latency:p50
+      expr: |
+        histogram_quantile(
+          0.50,
+          sum by(le)(
+            rate(
+              response_latency_ms_bucket[5m]
+            )
+          )
+        )
+
+
+    #
+    # Linkerd Request Latency P95
+    #
+    - record: linkerd:request_latency:p95
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum by(le)(
+            rate(
+              response_latency_ms_bucket[5m]
+            )
+          )
+        )
+
+
+    #
+    # Linkerd Proxy Count
+    #
+    - record: linkerd:proxy_instances
+      expr: |
+        count(
+          request_total
+        )

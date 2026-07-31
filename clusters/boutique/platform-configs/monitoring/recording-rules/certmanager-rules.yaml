@@ -1,0 +1,94 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: certmanager-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: certmanager.recording.rules
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Total Certificates
+    #
+    - record: certmanager:certificates:total
+      expr: |
+        count(
+          certmanager_certificate_expiration_timestamp_seconds
+        )
+
+
+    #
+    # Certificates Expiring Within 30 Days
+    #
+    - record: certmanager:certificates:expiring_30_days
+      expr: |
+        count(
+          certmanager_certificate_expiration_timestamp_seconds
+          <
+          time() + (30 * 24 * 3600)
+        )
+
+
+    #
+    # Certificates Expiring Within 7 Days
+    #
+    - record: certmanager:certificates:expiring_7_days
+      expr: |
+        count(
+          certmanager_certificate_expiration_timestamp_seconds
+          <
+          time() + (7 * 24 * 3600)
+        )
+
+
+    #
+    # Certificates Already Expired
+    #
+    - record: certmanager:certificates:expired
+      expr: |
+        count(
+          certmanager_certificate_expiration_timestamp_seconds
+          <
+          time()
+        )
+
+
+    #
+    # Certificate Renewal Failures
+    #
+    - record: certmanager:certificate_failures:rate
+      expr: |
+        sum(
+          rate(
+            certmanager_certificate_failed_issuance_total[5m]
+          )
+        )
+
+
+    #
+    # Certificate Requests
+    #
+    - record: certmanager:certificate_requests:rate
+      expr: |
+        sum(
+          rate(
+            certmanager_certificate_requests_total[5m]
+          )
+        )
+
+
+    #
+    # Issuer Ready Status
+    #
+    - record: certmanager:issuer_ready
+      expr: |
+        certmanager_clusterissuer_ready_status

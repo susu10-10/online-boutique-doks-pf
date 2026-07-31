@@ -1,0 +1,121 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: boutique-alert-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: boutique.alerts
+    interval: 30s
+    rules:
+
+    - alert: BoutiqueContainerCrashLooping
+      expr: |
+        kube_pod_container_status_waiting_reason{
+          namespace="boutique",
+          reason="CrashLoopBackOff"
+        } > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Boutique container crash looping
+        description: |
+          {{ $labels.pod }} is repeatedly crashing.
+
+    - alert: BoutiquePodNotReady
+      expr: |
+        kube_pod_status_ready{
+          namespace="boutique",
+          condition="true"
+        } == 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Boutique pod not ready
+        description: |
+          Pod {{ $labels.pod }} is not ready.
+
+    - alert: BoutiqueContainerRestarting
+      expr: |
+        increase(
+          kube_pod_container_status_restarts_total{
+            namespace="boutique"
+          }[15m]
+        ) > 5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Boutique container restarting
+        description: |
+          {{ $labels.pod }} restarted more than 5 times in 15 minutes.
+
+
+    - alert: BoutiqueServiceUnavailable
+      expr: |
+        kube_deployment_status_replicas_available{
+          namespace="boutique"
+        }
+        <
+        kube_deployment_spec_replicas{
+          namespace="boutique"
+        }
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: Boutique deployment unavailable
+        description: |
+          Deployment {{ $labels.deployment }} does not have all replicas available.
+
+
+    - alert: BoutiqueHighCPU
+      expr: |
+        sum by(pod)(
+          rate(
+            container_cpu_usage_seconds_total{
+              namespace="boutique",
+              container!="",
+              image!=""
+            }[5m]
+          )
+        ) > 0.8
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Boutique high CPU
+        description: |
+          Pod {{ $labels.pod }} CPU usage is high.
+
+
+    - alert: BoutiqueHighMemory
+      expr: |
+        sum by(pod)(
+          container_memory_working_set_bytes{
+            namespace="boutique",
+            container!="",
+            image!=""
+          }
+        )
+        /
+        sum by(pod)(
+          kube_pod_container_resource_limits{
+            namespace="boutique",
+            resource="memory"
+          }
+        )
+        > 0.85
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Boutique high memory usage
+        description: |
+          Pod {{ $labels.pod }} is above 85% memory limit.

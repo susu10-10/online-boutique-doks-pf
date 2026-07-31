@@ -1,0 +1,148 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: boutique-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: boutique.recording.rules
+    interval: 30s
+
+    rules:
+
+    #
+    # Boutique running pods
+    #
+    - record: boutique:pods_running
+      expr: |
+        count(
+          kube_pod_status_phase{
+            namespace="boutique",
+            phase="Running"
+          }
+        )
+
+    - record: boutique:workloads
+      expr: |
+        count by(app)(
+          kube_pod_info{
+            namespace="boutique"
+          }
+        )
+
+
+    #
+    # Boutique pods not ready
+    #
+    - record: boutique:memory_usage:bytes
+      expr: |
+        sum by(namespace,pod)(
+          container_memory_working_set_bytes{
+            namespace="boutique",
+            container!="",
+            image!=""
+          }
+        )
+
+
+    #
+    # Boutique container restart rate
+    #
+    - record: boutique:container_restart_rate
+      expr: |
+        sum by(namespace,pod)(
+          rate(
+            kube_pod_container_status_restarts_total{
+              namespace="boutique"
+            }[15m]
+          )
+        )
+
+
+    #
+    # CPU usage per pod
+    #
+    - record: boutique:cpu_usage:cores
+      expr: |
+        sum by(namespace,pod)(
+          rate(
+            container_cpu_usage_seconds_total{
+              namespace="boutique",
+              container!="",
+              image!=""
+            }[5m]
+          )
+        )
+
+
+    #
+    # Memory usage per pod
+    #
+    - record: boutique:memory_usage:bytes
+      expr: |
+        sum by(namespace,pod)(
+          container_memory_working_set_bytes{
+            namespace="boutique",
+            container!="",
+            image!=""
+          }
+        )
+
+
+    #
+    # Linkerd request rate
+    #
+    - record: boutique:http_requests:rate5m
+      expr: |
+        sum by(deployment)(
+          rate(
+            response_total{
+              namespace="boutique"
+            }[5m]
+          )
+        )
+
+
+    #
+    # Linkerd success rate
+    #
+    - record: boutique:http_success_rate
+      expr: |
+        sum by(deployment)(
+          rate(
+            response_total{
+              namespace="boutique",
+              classification="success"
+            }[5m]
+          )
+        )
+        /
+        sum by(deployment)(
+          rate(
+            response_total{
+              namespace="boutique"
+            }[5m]
+          )
+        )
+
+
+    #
+    # Linkerd P95 latency
+    #
+    - record: boutique:http_latency:p95
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum by(le, deployment)(
+            rate(
+              response_latency_ms_bucket{
+                namespace="boutique"
+              }[5m]
+            )
+          )
+        )

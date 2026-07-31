@@ -1,8 +1,5 @@
 alloy:
   configMap:
-    create: true
-
-  config:
     content: |
       logging {
         level = "info"
@@ -29,12 +26,33 @@ alloy:
           source_labels = ["__meta_kubernetes_pod_container_name"]
           target_label  = "container"
         }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label  = "node"
+        }
       }
+
 
       loki.source.kubernetes "pods" {
         targets    = discovery.relabel.pod_logs.output
-        forward_to = [loki.write.default.receiver]
+        forward_to = [loki.process.logs.receiver]
       }
+
+
+      loki.process "logs" {
+
+        stage.static_labels {
+          values = {
+            cluster = "boutique"
+          }
+        }
+
+        forward_to = [
+          loki.write.default.receiver,
+        ]
+      }
+
 
       loki.write "default" {
         endpoint {

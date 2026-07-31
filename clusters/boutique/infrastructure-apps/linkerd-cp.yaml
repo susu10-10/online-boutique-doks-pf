@@ -4,26 +4,21 @@ metadata:
   name: linkerd-cp
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    chart: linkerd-control-plane
-    repoURL: 'https://helm.linkerd.io/stable'
-    targetRevision: 1.16.11
-    helm:
-      values: |
-        identityTrustDomain: cluster.local
-        proxy:
-          resources:
-            cpu:
-              limit: 100m
-              request: 50m
-            memory:
-              limit: 128Mi
-              request: 64Mi
+  sources:
+    - chart: linkerd-control-plane
+      repoURL: 'https://helm.linkerd.io/stable'
+      targetRevision: 1.16.11
+      helm:
+        valueFiles:
+          - $values/clusters/boutique/platform-configs/helm-values/linkerd.yaml
+    - repoURL: 'https://github.com/susu10-10/online-boutique-doks-pf'
+      targetRevision: main
+      ref: values
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: linkerd

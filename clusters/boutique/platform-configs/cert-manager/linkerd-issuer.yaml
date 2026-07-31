@@ -14,7 +14,7 @@ metadata:
 spec:
   isCA: true
   commonName: root.linkerd.cluster.local
-  secretName: linkerd-identity-issuer-secret
+  secretName: linkerd-trust-anchor
   duration: 87600h
   renewBefore: 360h
   issuerRef:
@@ -32,7 +32,7 @@ metadata:
   namespace: linkerd
 spec:
   ca:
-    secretName: linkerd-identity-issuer-secret
+    secretName: linkerd-trust-anchor
 ---
 # The actual Identity Issuer Linkerd mounts for container authentication
 apiVersion: cert-manager.io/v1

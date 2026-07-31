@@ -33,7 +33,7 @@ jobs:
           TF_VAR_do_spaces_access_key: ${{ secrets.SPACES_ACCESS_KEY }}
           TF_VAR_do_spaces_secret_key: ${{ secrets.SPACES_SECRET_KEY }}
           TF_VAR_lb_ip: ${{ secrets.LB_IP }}
-      - if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: terraform apply -auto-approve
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN }}

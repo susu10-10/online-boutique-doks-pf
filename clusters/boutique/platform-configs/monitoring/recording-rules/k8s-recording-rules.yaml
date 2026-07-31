@@ -1,0 +1,144 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: kubernetes-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: kubernetes.recording.rules
+    interval: 30s
+
+    rules:
+
+    #
+    # Namespace CPU Usage
+    #
+    - record: namespace:cpu_usage:cores
+      expr: |
+        sum by(namespace)(
+          rate(
+            container_cpu_usage_seconds_total{
+              container!="",
+              image!=""
+            }[5m]
+          )
+        )
+
+
+    #
+    # Namespace Memory Usage
+    #
+    - record: namespace:memory_usage:bytes
+      expr: |
+        sum by(namespace)(
+          container_memory_working_set_bytes{
+            container!="",
+            image!=""
+          }
+        )
+
+
+    #
+    # Deployment Desired Replicas
+    #
+    - record: deployment:replicas_desired
+      expr: |
+        kube_deployment_spec_replicas
+
+
+    #
+    # Deployment Available Replicas
+    #
+    - record: deployment:replicas_available
+      expr: |
+        kube_deployment_status_replicas_available
+
+
+    #
+    # Deployment Replica Availability %
+    #
+    - record: deployment:availability:percent
+      expr: |
+        100 *
+        (
+          kube_deployment_status_replicas_available
+          /
+          kube_deployment_spec_replicas
+        )
+
+
+    #
+    # StatefulSet Ready Ratio
+    #
+    - record: statefulset:ready_ratio
+      expr: |
+        kube_statefulset_status_replicas_ready
+        /
+        kube_statefulset_status_replicas
+
+
+    #
+    # Pod Count By Namespace
+    #
+    - record: namespace:pods_running
+      expr: |
+        count by(namespace)(
+          kube_pod_status_phase{
+            phase="Running"
+          }
+        )
+
+
+    #
+    # Pending Pods
+    #
+    - record: namespace:pods_pending
+      expr: |
+        count by(namespace)(
+          kube_pod_status_phase{
+            phase="Pending"
+          }
+        )
+
+
+    #
+    # PVC Usage %
+    #
+    - record: pvc:usage_percent
+      expr: |
+        100 *
+        (
+          kubelet_volume_stats_used_bytes
+          /
+          kubelet_volume_stats_capacity_bytes
+        )
+
+    - record: platform:pods_running
+      expr: |
+        count(kube_pod_status_phase{phase="Running"} == 1)
+
+    - record: platform:pods_pending
+      expr: |
+        count(kube_pod_status_phase{phase="Pending"} == 1)
+
+    - record: platform:pods_failed
+      expr: |
+        count(kube_pod_status_phase{phase="Failed"} == 1)
+
+    # pvc almost full
+    - record: pvc:almost_full
+      expr: |
+        kubelet_volume_stats_inodes_used
+        /
+        kubelet_volume_stats_inodes
+        > 0.8 
+
+    # pod crashlooping
+    - record: pod:crashlooping
+      expr: |
+        kube_pod_container_status_restarts_total > 5

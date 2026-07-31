@@ -1,0 +1,99 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: workloads-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: workloads.recording.rules
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Pod CPU Usage
+    #
+    - record: pod:cpu_usage:cores
+      expr: |
+        sum by(namespace,pod)(
+          rate(
+            container_cpu_usage_seconds_total{
+              container!="",
+              image!=""
+            }[5m]
+          )
+        )
+
+
+    #
+    # Pod Memory Usage
+    #
+    - record: pod:memory_usage:bytes
+      expr: |
+        sum by(namespace,pod)(
+          container_memory_working_set_bytes{
+            container!="",
+            image!=""
+          }
+        )
+
+
+    #
+    # Container Restart Rate
+    #
+    - record: container:restart_rate
+      expr: |
+        sum by(namespace,pod,container)(
+          rate(
+            kube_pod_container_status_restarts_total[15m]
+          )
+        )
+
+
+    #
+    # Container CPU Throttling %
+    #
+    - record: container:cpu_throttled:percent
+      expr: |
+        100 *
+        (
+          rate(
+            container_cpu_cfs_throttled_periods_total[5m]
+          )
+          /
+          rate(
+            container_cpu_cfs_periods_total[5m]
+          )
+        )
+
+
+    #
+    # Container Memory Working Set %
+    #
+    - record: container:memory_usage_percent
+      expr: |
+        100 *
+        (
+          container_memory_working_set_bytes
+          /
+          container_spec_memory_limit_bytes
+        )
+
+
+    #
+    # Running Container Count
+    #
+    - record: workload:containers_running
+      expr: |
+        count(
+          container_last_seen{
+            container!="",
+            image!=""
+          }
+        )

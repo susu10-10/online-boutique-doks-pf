@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/susu10-10/online-boutique-doks-pf
     targetRevision: main
-    path: clusters/boutique/platform-configs/prometheus
+    path: clusters/boutique/platform-configs/monitoring
 
   destination:
     server: https://kubernetes.default.svc

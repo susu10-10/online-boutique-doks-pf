@@ -1,0 +1,123 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: workloads-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: workloads.alerts
+    interval: 30s
+
+    rules:
+
+
+    #
+    # High pod CPU
+    #
+    - alert: HighPodCPU
+      expr: |
+        sum by(namespace,pod)(
+          rate(
+            container_cpu_usage_seconds_total{
+              container!="",
+              image!=""
+            }[5m]
+          )
+        )
+        /
+        sum by(namespace,pod)(
+          kube_pod_container_resource_limits{
+            resource="cpu"
+          }
+        )
+        > 0.85
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: High pod CPU usage
+        description: |
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} is using more than 85% CPU.
+
+
+    #
+    # High pod memory
+    #
+    - alert: HighPodMemory
+      expr: |
+        sum by(namespace,pod)(
+          container_memory_working_set_bytes{
+            container!="",
+            image!=""
+          }
+        )
+        /
+        sum by(namespace,pod)(
+          kube_pod_container_resource_limits{
+            resource="memory"
+          }
+        )
+        > 0.85
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: High pod memory usage
+        description: |
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} is using more than 85% memory.
+
+
+    #
+    # Container restarting
+    #
+    - alert: ContainerRestarts
+      expr: |
+        increase(
+          kube_pod_container_status_restarts_total[15m]
+        ) > 5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Container restarting frequently
+        description: |
+          Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} restarted more than 5 times.
+
+
+    #
+    # Container OOMKilled
+    #
+    - alert: OOMKilled
+      expr: |
+        kube_pod_container_status_last_terminated_reason{
+          reason="OOMKilled"
+        } > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Container killed by OOM
+        description: |
+          Container {{ $labels.container }} in pod {{ $labels.pod }} was killed due to memory exhaustion.
+
+
+    #
+    # Container waiting
+    #
+    - alert: ContainerWaiting
+      expr: |
+        kube_pod_container_status_waiting_reason{
+          reason!="ContainerCreating"
+        } > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Container waiting
+        description: |
+          Container {{ $labels.container }} in pod {{ $labels.pod }} is waiting.

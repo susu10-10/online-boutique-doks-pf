@@ -1,0 +1,150 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: kubernetes-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: kubernetes.alerts
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Pod stuck pending
+    #
+    - alert: PodPending
+      expr: |
+        kube_pod_status_phase{
+          phase="Pending"
+        } == 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Pod pending
+        description: |
+          Pod {{ $labels.namespace }}/{{ $labels.pod }} has been pending for more than 10 minutes.
+
+
+    #
+    # Pod crash looping
+    #
+    - alert: PodCrashLooping
+      expr: |
+        kube_pod_container_status_waiting_reason{
+          reason="CrashLoopBackOff"
+        } > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Pod crash looping
+        description: |
+          Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping.
+
+
+    #
+    # Deployment replica mismatch
+    #
+    - alert: DeploymentReplicasMismatch
+      expr: |
+        kube_deployment_spec_replicas
+        !=
+        kube_deployment_status_available_replicas
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Deployment replicas mismatch
+        description: |
+          Deployment {{ $labels.namespace }}/{{ $labels.deployment }} does not have the expected replicas available.
+
+
+    #
+    # StatefulSet replica mismatch
+    #
+    - alert: StatefulSetReplicasMismatch
+      expr: |
+        kube_statefulset_status_replicas_ready
+        !=
+        kube_statefulset_status_replicas
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: StatefulSet replicas mismatch
+        description: |
+          StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} is not fully available.
+
+
+    #
+    # DaemonSet unavailable
+    #
+    - alert: DaemonSetUnavailable
+      expr: |
+        kube_daemonset_status_number_unavailable > 0
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: DaemonSet unavailable
+        description: |
+          DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} has unavailable pods.
+
+
+    #
+    # Failed Job
+    #
+    - alert: JobFailed
+      expr: |
+        kube_job_status_failed > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Kubernetes job failed
+        description: |
+          Job {{ $labels.namespace }}/{{ $labels.job_name }} has failed.
+
+
+    #
+    # PVC pending
+    #
+    - alert: PVCPending
+      expr: |
+        kube_persistentvolumeclaim_status_phase{
+          phase="Pending"
+        } == 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: PVC pending
+        description: |
+          PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has not been bound.
+
+
+    #
+    # PVC almost full
+    #
+    - alert: PVCAlmostFull
+      expr: |
+        (
+          kubelet_volume_stats_available_bytes
+          /
+          kubelet_volume_stats_capacity_bytes
+        ) < 0.15
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: PVC running out of space
+        description: |
+          PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 15% free space.

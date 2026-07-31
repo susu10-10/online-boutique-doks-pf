@@ -1,0 +1,120 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: gitops-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: gitops.alerts
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Application Out Of Sync
+    #
+    - alert: ArgoCDApplicationOutOfSync
+      expr: |
+        argocd_app_info{
+          sync_status!="Synced"
+        } == 1
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: ArgoCD application out of sync
+        description: |
+          Application {{ $labels.name }} has been out of sync for more than 15 minutes.
+
+
+    #
+    # Application degraded
+    #
+    - alert: ArgoCDApplicationDegraded
+      expr: |
+        argocd_app_info{
+          health_status!="Healthy"
+        } == 1
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: ArgoCD application degraded
+        description: |
+          Application {{ $labels.name }} is not healthy.
+
+
+    #
+    # Application sync failed
+    #
+    - alert: ArgoCDSyncFailed
+      expr: |
+        increase(
+          argocd_app_sync_total{
+            phase="Failed"
+          }[15m]
+        ) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: ArgoCD sync failed
+        description: |
+          ArgoCD application {{ $labels.name }} failed to sync.
+
+
+    #
+    # ArgoCD controller down
+    #
+    - alert: ArgoCDControllerDown
+      expr: |
+        up{
+          job=~".*argocd.*application-controller.*"
+        } == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: ArgoCD application controller down
+        description: |
+          ArgoCD application controller metrics endpoint is unavailable.
+
+
+    #
+    # ArgoCD repo server down
+    #
+    - alert: ArgoCDRepoServerDown
+      expr: |
+        up{
+          job=~".*argocd.*repo-server.*"
+        } == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: ArgoCD repo server down
+        description: |
+          ArgoCD repository server is unavailable.
+
+
+    #
+    # ArgoCD Redis unavailable
+    #
+    - alert: ArgoCDRedisDown
+      expr: |
+        up{
+          job=~".*argocd.*redis.*"
+        } == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: ArgoCD Redis unavailable
+        description: |
+          ArgoCD Redis metrics endpoint is unavailable.

@@ -1,0 +1,100 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: nginx-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+
+  groups:
+
+  - name: nginx.alerts
+    interval: 30s
+
+    rules:
+
+
+    #
+    # NGINX controller unavailable
+    #
+    - alert: NginxIngressControllerDown
+      expr: |
+        up{
+          job=~".*ingress-nginx.*"
+        } == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "NGINX ingress controller down"
+        description: >
+          NGINX ingress controller metrics target is unavailable.
+
+
+    #
+    # High HTTP 5xx responses
+    #
+    - alert: HighIngress5xx
+      expr: |
+        (
+          sum(
+            rate(
+              nginx_ingress_controller_requests{
+                status=~"5.."
+              }[5m]
+            )
+          )
+          /
+          sum(
+            rate(
+              nginx_ingress_controller_requests[5m]
+            )
+          )
+        ) > 0.05
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High ingress HTTP 5xx rate"
+        description: >
+          More than 5% of ingress requests are returning errors.
+
+
+    #
+    # High ingress latency
+    #
+    - alert: HighIngressLatency
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum(
+            rate(
+              nginx_ingress_controller_request_duration_seconds_bucket[5m]
+            )
+          ) by (le)
+        ) > 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High ingress latency"
+        description: >
+          95th percentile ingress latency is above 1 second.
+
+
+    #
+    # No endpoints behind ingress
+    #
+    - alert: IngressNoEndpoints
+      expr: |
+        nginx_ingress_controller_no_service_endpoints > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Ingress has no backend endpoints"
+        description: >
+          One or more ingress services have no available endpoints.

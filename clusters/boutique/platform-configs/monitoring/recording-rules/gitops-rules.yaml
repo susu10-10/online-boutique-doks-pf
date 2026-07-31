@@ -37,6 +37,17 @@ spec:
           }
         )
 
+    #
+    # Applications unhealthy
+    #
+    - record: gitops:applications_unhealthy
+      expr: |
+        count(
+          argocd_app_info{
+            health_status!="Healthy"
+          }
+        )
+
 
     #
     # Out Of Sync Applications

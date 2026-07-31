@@ -1,0 +1,86 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+
+metadata:
+  name: certmanager-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+
+  groups:
+
+  - name: certmanager.alerts
+    interval: 30s
+
+    rules:
+
+
+    #
+    # Certificate expires soon
+    #
+    - alert: CertificateExpiringSoon
+      expr: |
+        certmanager_certificate_expiration_timestamp_seconds
+        -
+        time()
+        < 30 * 24 * 60 * 60
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: "Certificate expires within 30 days"
+        description: >
+          Certificate {{ $labels.name }} in namespace
+          {{ $labels.namespace }} will expire soon.
+
+
+    #
+    # Certificate already expired
+    #
+    - alert: CertificateExpired
+      expr: |
+        certmanager_certificate_expiration_timestamp_seconds < time()
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Certificate expired"
+        description: >
+          Certificate {{ $labels.name }} in namespace
+          {{ $labels.namespace }} has expired.
+
+
+    #
+    # Certificate request failed
+    #
+    - alert: CertificateRequestFailed
+      expr: |
+        certmanager_certificate_ready_status{
+          condition="False"
+        } == 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Certificate request failed"
+        description: >
+          Certificate request failed for
+          {{ $labels.name }}.
+
+
+    #
+    # Cluster issuer unavailable
+    #
+    - alert: ClusterIssuerUnavailable
+      expr: |
+        certmanager_clusterissuer_ready_status == 0
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ClusterIssuer unavailable"
+        description: >
+          ClusterIssuer {{ $labels.name }}
+          is not ready.

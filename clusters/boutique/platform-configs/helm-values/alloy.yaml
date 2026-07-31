@@ -1,0 +1,28 @@
+controller:
+  type: daemonset
+
+
+alloy:
+  configMap:
+    create: true
+
+  config:
+    server:
+      log_level: info
+
+    discovery.kubernetes "pods" {
+      role = "pod"
+    }
+
+
+    loki.source.kubernetes "pods" {
+      targets    = discovery.kubernetes.pods.targets
+      forward_to = [loki.write.default.receiver]
+    }
+
+
+    loki.write "default" {
+      endpoint {
+        url = "http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push"
+      }
+    }

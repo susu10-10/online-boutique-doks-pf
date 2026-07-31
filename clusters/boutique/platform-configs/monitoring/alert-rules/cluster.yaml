@@ -1,0 +1,85 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-cluster-alerts
+  namespace: prometheus
+  labels:
+    release: prometheus
+spec:
+  groups:
+  - name: cluster.alerts
+    rules:
+    #
+    # Node availability
+    #
+    - alert: NodeNotReady
+      expr: |
+        kube_node_status_condition{
+          condition="Ready",
+          status="true"
+        } == 0
+
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kubernetes node is not ready"
+        description: >
+          Node {{ $labels.node }}
+          has been NotReady for more than 10 minutes.
+
+
+    #
+    # Node memory pressure
+    #
+    - alert: NodeMemoryPressure
+      expr: |
+        kube_node_status_condition{
+          condition="MemoryPressure",
+          status="true"
+        } == 1
+
+      for: 5m
+
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node memory pressure detected"
+        description: >
+          Node {{ $labels.node }}
+          is experiencing memory pressure.
+
+
+
+    #
+    # Node disk pressure
+    #
+    - alert: NodeDiskPressure
+      expr: |
+        kube_node_status_condition{
+          condition="DiskPressure",
+          status="true"
+        } == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node disk pressure detected"
+        description: >
+          Node {{ $labels.node }}
+          is experiencing disk pressure.
+
+    #
+    # Kubernetes API unavailable
+    #
+
+    - alert: KubernetesAPIDown
+      expr: |
+        absent(up{job="apiserver"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kubernetes API server unavailable"
+        description: >
+          Prometheus cannot scrape Kubernetes API server.

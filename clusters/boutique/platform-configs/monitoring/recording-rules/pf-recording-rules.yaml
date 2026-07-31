@@ -85,3 +85,35 @@ spec:
             image!=""
           }[5m])
         )
+
+    - record: platform:pods_running
+      expr: |
+        count(kube_pod_status_phase{phase="Running"} == 1)
+
+    - record: platform:pods_pending
+      expr: |
+        count(kube_pod_status_phase{phase="Pending"} == 1)
+
+    - record: platform:pods_failed
+      expr: |
+        count(kube_pod_status_phase{phase="Failed"} == 1)
+
+    - record: platform:nodes
+      expr: |
+        count(kube_node_info)
+
+    - record: platform:nodes_ready
+      expr: |
+        count(kube_node_status_condition{condition="Ready", status="true"})
+
+    - record: platform:nodes_not_ready
+      expr: |
+        count(kube_node_status_condition{condition="Ready", status="false"})
+
+    - record: platform:container_restarts
+      expr: |
+        sum(increase(kube_pod_container_status_restarts_total[5m]))
+
+    - record: platform:persistent_volumes
+      expr: |
+        count(kube_persistentvolumeclaim_info)

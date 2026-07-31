@@ -83,3 +83,27 @@ spec:
         summary: "Kubernetes API server unavailable"
         description: >
           Prometheus cannot scrape Kubernetes API server.
+
+    # High cluster cpu
+    - alert: HighClusterCPU
+      expr: |
+        cluster:cpu_usage:percent > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High cluster CPU usage detected"
+        description: >
+          Cluster CPU usage is above 80% for more than 5 minutes.
+
+    # High Cluster Memory
+    - alert: HighClusterMemory
+      expr: |
+        cluster:memory_usage:percent > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High cluster memory usage detected"
+        description: >
+          Cluster memory usage is above 80% for more than 5 minutes.

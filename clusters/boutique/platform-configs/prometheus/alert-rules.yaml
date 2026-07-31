@@ -1,0 +1,133 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-alert-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+
+spec:
+  groups:
+
+  - name: platform.nodes
+    interval: 30s
+    rules:
+
+    - alert: KubernetesNodeNotReady
+      expr: |
+        kube_node_status_condition{
+          condition="Ready",
+          status="true"
+        } == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Kubernetes node not ready
+        description: >
+          Node {{ $labels.node }} has been NotReady for more than 5 minutes.
+
+
+    - alert: KubernetesNodeMemoryPressure
+      expr: |
+        kube_node_status_condition{
+          condition="MemoryPressure",
+          status="true"
+        } == 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Node memory pressure detected
+        description: >
+          Node {{ $labels.node }} is under memory pressure.
+
+
+
+  - name: platform.workloads
+    interval: 30s
+    rules:
+
+
+    - alert: PodCrashLooping
+      expr: |
+        rate(
+          kube_pod_container_status_restarts_total[15m]
+        ) > 0.05
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Pod is crash looping
+        description: >
+          Pod {{ $labels.namespace }}/{{ $labels.pod }}
+          is restarting frequently.
+
+
+
+    - alert: DeploymentUnavailable
+      expr: |
+        kube_deployment_status_replicas_available
+        <
+        kube_deployment_spec_replicas
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Deployment replicas unavailable
+        description: >
+          Deployment {{ $labels.namespace }}/{{ $labels.deployment }}
+          has unavailable replicas.
+
+
+
+  - name: platform.resources
+    interval: 30s
+    rules:
+
+
+    - alert: HighClusterCPU
+      expr: |
+        cluster:cpu_usage:rate5m > 0.85
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: High cluster CPU usage
+        description: >
+          Cluster CPU usage is above 85%.
+
+
+
+    - alert: HighClusterMemory
+      expr: |
+        cluster:memory_usage:ratio > 0.85
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: High cluster memory usage
+        description: >
+          Cluster memory usage is above 85%.
+
+
+
+  - name: platform.storage
+    interval: 60s
+    rules:
+
+
+    - alert: PersistentVolumeAlmostFull
+      expr: |
+        kubelet_volume_stats_available_bytes
+        /
+        kubelet_volume_stats_capacity_bytes
+        < 0.15
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: Persistent volume almost full
+        description: >
+          PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}
+          has less than 15% space remaining.

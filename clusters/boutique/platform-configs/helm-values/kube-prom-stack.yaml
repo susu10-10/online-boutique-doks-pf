@@ -22,6 +22,12 @@ prometheus:
   replicas: 1
 
 grafana:
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      uid: loki
+      url: http://loki.loki:3100
+      access: proxy
   persistence:
     enabled: true
     size: 5Gi

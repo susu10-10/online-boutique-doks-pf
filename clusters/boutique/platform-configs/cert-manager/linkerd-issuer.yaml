@@ -19,7 +19,7 @@ spec:
   renewBefore: 360h
   issuerRef:
     name: linkerd-selfsigned
-    kind: Issuer
+    kind: ClusterIssuer
   privateKey:
     algorithm: ECDSA
     size: 256

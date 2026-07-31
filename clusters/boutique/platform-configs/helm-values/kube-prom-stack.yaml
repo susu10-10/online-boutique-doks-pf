@@ -25,10 +25,15 @@ grafana:
   persistence:
     enabled: true
     size: 5Gi
+
   testFramework:
     enabled: true
-  adminUser: admin
-  adminPassword: 
+
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+
   resources:
     requests:
       cpu: 100m
@@ -36,18 +41,22 @@ grafana:
     limits:
       cpu: 500m
       memory: 512Mi
+
   ingress:
     enabled: true
     ingressClassName: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
     hosts:
       - grafana.suworks.me
+    
     tls:
       - hosts:
           - grafana.suworks.me
         secretName: grafana-tls
+  
   datasources:
     datasources.yaml:
       apiVersion: 1

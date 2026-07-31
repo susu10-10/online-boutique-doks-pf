@@ -9,6 +9,21 @@ proxy:
 
 heartbeatSchedule: "0 0 */1 * *"
 
+identityTrustDomain: cluster.local
+
+identityTrustAnchorsPEM: |
+  -----BEGIN CERTIFICATE-----
+  MIIBjjCCATSgAwIBAgIUJ3mEevDd0NflkhV1pBtFd4rXe4EwCgYIKoZIzj0EAwIw
+  JTEjMCEGA1UEAxMacm9vdC5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjYwNzMx
+  MDkxMjU2WhcNMzYwNzI4MDkxMjU2WjAlMSMwIQYDVQQDExpyb290LmxpbmtlcmQu
+  Y2x1c3Rlci5sb2NhbDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAUbLV8d8c54
+  TYD8PPJh2VFoTKYCVQnQRCdX0fwSvZBiW4EThj8LfxQXzQN7hdhN/FJGlZec25cU
+  phFczaTAWNijQjBAMA4GA1UdDwEB/wQEAwICpDAPBgNVHRMBAf8EBTADAQH/MB0G
+  A1UdDgQWBBTjsv0o/OCp90jqXdX0pv7YG+kf4DAKBggqhkjOPQQDAgNIADBFAiB1
+  XEb3ON/taENzXtMVO7Dns8UOyAoPi/g9O+HBTjFzZAIhAOBykvlds5zwBw/g1bpq
+  Uf2aBERbDCC3MYjAtHIzNMLh
+  -----END CERTIFICATE-----
+
 identity:
   issuer:
     scheme: kubernetes.io/tls

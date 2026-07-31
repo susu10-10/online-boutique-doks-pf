@@ -27,6 +27,7 @@ grafana:
     size: 5Gi
   testFramework:
     enabled: true
+  adminUser: admin
   adminPassword: 
   resources:
     requests:

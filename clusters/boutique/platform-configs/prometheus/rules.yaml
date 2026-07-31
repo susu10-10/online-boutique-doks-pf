@@ -1,0 +1,72 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-recording-rules
+  namespace: prometheus
+  labels:
+    release: prometheus
+spec:
+  groups:
+
+  - name: platform.cluster.resources
+    interval: 30s
+    rules:
+
+    - record: cluster:cpu_usage:rate5m
+      expr: |
+        1 - avg(
+          rate(node_cpu_seconds_total{mode="idle"}[5m])
+        )
+
+    - record: cluster:memory_usage:ratio
+      expr: |
+        1 - (
+          node_memory_MemAvailable_bytes
+          /
+          node_memory_MemTotal_bytes
+        )
+
+    - record: cluster:filesystem_usage:ratio
+      expr: |
+        1 - (
+          node_filesystem_avail_bytes{
+            mountpoint="/"
+          }
+          /
+          node_filesystem_size_bytes{
+            mountpoint="/"
+          }
+        )
+
+
+  - name: platform.workloads
+    interval: 30s
+    rules:
+
+    - record: namespace:pod_cpu_usage:rate5m
+      expr: |
+        sum by(namespace)(
+          rate(
+            container_cpu_usage_seconds_total{
+              container!="",
+              container!="POD"
+            }[5m]
+          )
+        )
+
+
+    - record: namespace:memory_usage_bytes
+      expr: |
+        sum by(namespace)(
+          container_memory_working_set_bytes{
+            container!="",
+            container!="POD"
+          }
+        )
+
+
+    - record: workload:restart_rate:5m
+      expr: |
+        rate(
+          kube_pod_container_status_restarts_total[5m]
+        )

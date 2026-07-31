@@ -6,6 +6,7 @@ on:
     paths:
       - 'terraform/bootstrap/**'
       - '.github/workflows/terraform-main.yml'
+  workflow_dispatch:
 
 jobs:
   terraform-bootstrap:

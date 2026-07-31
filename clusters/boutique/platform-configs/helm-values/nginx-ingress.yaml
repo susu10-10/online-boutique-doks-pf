@@ -17,3 +17,11 @@ controller:
       X-XSS-Protection: 1; mode=block
       Referrer-Policy: strict-origin-when-cross-origin
       Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: prometheus
+      labels:
+        release: prometheus

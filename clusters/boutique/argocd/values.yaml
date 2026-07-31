@@ -11,7 +11,6 @@ configs:
         type: git
         name: boutique-infra
 
-
 server:
   replicas: 1
   ingress:
@@ -24,16 +23,23 @@ server:
     tls: true
     hosts:
       - argocd.suworks.me
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+      servicePort: 8083
 
 ## Application controller
 controller:
   # -- Application controller name string
   name: application-controller
   # -- The number of application controller pods to run.
-  # Additional replicas will cause sharding of managed clusters across number of replicas.
-  ## With dynamic cluster distribution turned on, sharding of the clusters will gracefully
-  ## rebalance if the number of replica's changes or one becomes unhealthy. (alpha)
   replicas: 1
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+      servicePort: 8082
 
 ## Repo Server
 repoServer:
@@ -41,14 +47,23 @@ repoServer:
   name: repo-server
   # -- The number of repo server pods to run
   replicas: 1
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+      servicePort: 8084
 
 ## ApplicationSet controller
 applicationSet:
   # -- ApplicationSet controller name string
   name: applicationset-controller
-
   # -- The number of ApplicationSet controller pods to run
   replicas: 1
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+      servicePort: 8080
 
 ## Redis
 redis:
